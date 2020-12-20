@@ -16,7 +16,7 @@ struct Node* insert_node(char * id, char * type, struct Node * son);
 void insert_brother(struct Node *node,struct Node *brother);
 void print_tree(struct Node *root, int dots);
 void addSonFirst(struct Node* father, struct Node* son);
-void clear(struct Node *root);
+void clear(struct Node *node);
 int yylex(void);
 void yyerror (char * s);
 

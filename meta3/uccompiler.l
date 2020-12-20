@@ -10,6 +10,7 @@
 	int column = 1;
     int line = 1;
     int flag = 0;
+    int syn_error=0;
     int error_lex= 0;
     int error_syn=0;
     int comment_line = 1;
@@ -237,13 +238,17 @@ int main(int argc, char *argv[])
 			
 		}
 		if(strcmp(argv[1], "-s")==0){ // -s tabela de simbolos
-			flag = 2;
+			flag = 0;
 			//error_lex=1; // print dos erros lexicais
 			//error_syn=1;
+			yyparse();
 			check_program(node);
 			check_tree(node);
 			print_tables();
-			yyparse();
+			if (syn_error==0){
+				print_tree(node);
+			}
+			
 			
 		}
 
@@ -261,7 +266,7 @@ int main(int argc, char *argv[])
 	}
 
 	
-	
+	clear(node);
 	return 0;
 }
 

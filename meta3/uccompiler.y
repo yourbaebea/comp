@@ -9,7 +9,7 @@
 
     #include "uccompiler.h"
 
-    int syn_error = 0;
+     extern int syn_error;
     extern int flag;
     extern Node * node;
 
@@ -86,6 +86,20 @@
             uncle = uncle->brother;
         }
 
+    }
+
+
+    void clear(struct Node * node){
+        if (node == NULL){
+            return;
+        }
+        if (node->son != NULL){
+            clear(node->son);
+        }
+        if (node->brother != NULL){
+            clear(node->brother);
+        }
+        free(node);
     }
         
 
