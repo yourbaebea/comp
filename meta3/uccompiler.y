@@ -9,7 +9,7 @@
 
     #include "uccompiler.h"
 
-     extern int syn_error;
+    extern int syn_error;
     extern int flag;
     extern Node * node;
 
