@@ -3,6 +3,28 @@
 #include "symbol_table.h"
 #include <ctype.h>
 
+// Parte do semantic.h
+#include <stdio.h>
+#include <stdlib.h>  
+#include <string.h> 
+#include "symbol_table.h"
+
+//semantic  
+
+void check_program(struct Node * node);
+void check_func_definition(struct  Node * node);
+void check_func_declaration(struct  Node * node);
+void check_declaration(struct  Node * node);
+char * check_type_specs(char * typespec);
+char * check_parameter(struct  Node * node);
+char ** check_parameters(struct  Node * node);
+void insert_parameters_function(struct Node * node, char * typetable);
+void check_tree(struct  Node * node);
+void check_func_body(struct  Node * node, char * typetable);
+void check_extra(char* str);
+
+
+
 char name[20];
 char chartype[20];
 
@@ -216,8 +238,11 @@ void check_func_body(struct Node* node, char * typetable){
 		char typelist  [][100]= {"Declaration","Id", "Or", "And","BitWiseAnd","BitWiseOr","BitWiseXor","Mod","Not","Eq",
 			"Ne","Le","Ge","Lt","Gt","IntLit","ChrLit","RealLit"};
 
+		size_t typelist_len = sizeof(typelist)/sizeof(*typelist);
 		
-		for (int i=0; i< len(typelist); i++){
+		
+		//for (int i=0; i< len(typelist); i++){
+		for (int i=0; i< typelist_len; i++){
 
 			if (strcmp(typespec, typelist[i]) == 0){
 				switch(i){
@@ -225,6 +250,7 @@ void check_func_body(struct Node* node, char * typetable){
 						flag = 1;
 						break;
 					case 1:// id
+					{
 						char * type = search_type(node->id, typetable);
 						char * extra;
 						strcat(extra," - ");
@@ -236,9 +262,10 @@ void check_func_body(struct Node* node, char * typetable){
 							strcat(extra,type);
 						}
 
-						int size = strlen(extra)+1
-						node->extra= strndup(extra, size)
+						int size = strlen(extra)+1;
+						node->extra= strndup(extra, size);
 						break;
+					}
 					case 17: // reallit
 						node->extra = strdup(" - double");
 						break;
@@ -272,9 +299,11 @@ void check_func_body(struct Node* node, char * typetable){
 		}
 
 		Node* aux1= node->son;
+		
+		size_t typelist2_len = sizeof(typelist2)/sizeof(*typelist2);
 
-
-		for (int i=0; i< len(typelist2); i++){
+		//for (int i=0; i< len(typelist2); i++){
+		for (int i=0; i< typelist2_len; i++){
 			if (strcmp(typespec, typelist2[i]) == 0){
 				switch(i){
 					case 0: case 1: case 2: case 3: //plus minus store comma
@@ -290,6 +319,7 @@ void check_func_body(struct Node* node, char * typetable){
 						break;
 
 					case 8: //call
+					{
 						Node* aux2 =  node->son;
 						while (strcmp(aux2->type, "Aux") == 0)
 							aux2 = aux2->son;
@@ -303,12 +333,12 @@ void check_func_body(struct Node* node, char * typetable){
 						}
 						else{
 							strcat(extra,type);
-							checkextra(extra);
+							check_extra(extra);
 						}
 						node->extra= extra;
 
 						break;
-
+					}
 
 					default: //case 4:	case 5: case 6: case 7:  add sub div mul
 						
@@ -328,8 +358,10 @@ void check_func_body(struct Node* node, char * typetable){
 
 						char extralist [][100]= {" - undef"," - double"," - int"," - short"," - char"};
 
+						size_t extralist_len = sizeof(extralist) / sizeof(*extralist);
 
-						for (int i=0; i< len(extralist); i++){
+						//for (int i=0; i< len(extralist); i++){
+						for (int i=0; i< extralist_len; i++){
 							if (strcmp(extra1, extralist[i]) == 0)
 								extra3= extra1;
 							if (strcmp(extra2, extralist[i]) == 0)
