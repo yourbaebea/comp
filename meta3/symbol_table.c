@@ -1,76 +1,79 @@
 
 #include "symbol_table.h"
+#include <ctype.h>
 
-struct Table * symboltable = NULL;
+Table * symboltable;
 
 void start_table(){
-	struct Table* symboltable = (struct Table*) malloc(sizeof(struct Table));
-	strcpy(symboltable->type, strdup("Global");
+	symboltable = (Table*) malloc(sizeof(Table));
+	strcpy(symboltable->type, strdup("Global"));
 	symboltable->name = strdup("");
 	symboltable->flag = 1;
-	symboltable->paramslist = NULL;
+	symboltable->parameters = NULL;
 
 	insert("putchar","int(int)","","Global");
 	insert("getchar","int(void)","","Global");
 }
 
 void init_function_table(char * name, char ** parameters, int flag){
-	struct Table* auxtable = (struct Table*) malloc(sizeof(struct Table));
+	Table* auxtable = (Table*) malloc(sizeof(Table));
+	strcpy(auxtable->type, strdup("Function"));
+	symboltable->name = strdup(name);
+	symboltable->flag = flag;
+	symboltable->parameters= parameters;
 	
-	editsymbol(auxtable,name,"Function",flag,parameters);
-	
-	struct Table * table = symboltable;
+	Table * aux2table = (Table*) malloc(sizeof(Table));
+	aux2table= symboltable;
 
-	if (table == NULL){
-		table = auxtable;
+	if (aux2table == NULL){
+		aux2table = auxtable;
 		return;
 	}
 	
-	while (table->next != NULL){
-		if (strcmp(table->name, name)==0 && table->flag==0){
-			table->flag = 1;
+	while (aux2table->next != NULL){
+		if (strcmp(aux2table->name, name)==0 && aux2table->flag==0){
+			aux2table->flag = 1;
 			free(auxtable);
 			return;
 		}
-		table = table->next;
+		aux2table = aux2table->next;
 	}
 
-	if (strcmp(table->name, name)==0 && table->flag==0){
-		table->flag = 1;
+	if (strcmp(aux2table->name, name)==0 && aux2table->flag==0){
+		aux2table->flag = 1;
 		free(auxtable);
 		return;
 	}
 
-	table->next = auxtable;
+	aux2table->next = auxtable;
 
 }
 
 
 void insert(char * id, char * type, char * parameter, char * typetable){
-	struct NodeTable* auxnodetable = (struct NodeTable*) malloc(sizeof(struct NodeTable));
+	NodeTable* auxnodetable = (NodeTable*) malloc(sizeof(NodeTable));
 	auxnodetable->id = id;
 	auxnodetable->type = type;
 	auxnodetable->parameter = parameter;
 	auxnodetable->next = NULL;
 
-	struct Table * table = NULL;
+	Table * aux2table = (Table*) malloc(sizeof(Table));
 
 	if (strcmp(typetable, "Global")==0)
-		table = symboltable;
+		aux2table = symboltable;
 	else{
-		table = symboltable->next;
-		while (table != NULL && strcmp(typetable,table->name)!=0)
-			table = table->next;
+		aux2table = symboltable->next;
+		while (aux2table != NULL && strcmp(typetable,aux2table->name)!=0)
+			aux2table = aux2table->next;
 	}
 
 
-	if (table->nodetable == NULL){
-		table->nodetable = auxnodetable;
+	if (aux2table->nodetable == NULL){
+		aux2table->nodetable = auxnodetable;
 		return;
 	}
-	struct NodeTable* nodetable = (struct NodeTable*) malloc(sizeof(struct NodeTable));
-	
-	nodeTable nodetable = table->nodetable;
+	NodeTable* nodetable = (NodeTable*) malloc(sizeof(NodeTable));
+	nodetable = aux2table->nodetable;
 	while (nodetable->next != NULL){
 
 		if (strcmp(nodetable->id, id)==0){
@@ -90,18 +93,18 @@ void insert(char * id, char * type, char * parameter, char * typetable){
 
 
 void print_tables(){
-	struct Table * table = symboltable;
-	struct NodeTable* nodetable = (struct NodeTable*) malloc(sizeof(struct NodeTable));
+	Table * auxtable = symboltable;
+	NodeTable* nodetable = (NodeTable*) malloc(sizeof(NodeTable));
 	
 
-	while (table != NULL){
-		if (table->flag == 1){
-			if (strcmp(table->type,"Global")==0)
+	while (auxtable != NULL){
+		if (auxtable->flag == 1){
+			if (strcmp(auxtable->type,"Global")==0)
 				printf("===== Global Symbol Table =====\n");
 			else 
-				printf("===== %s %s Symbol Table =====\n", table->type, table->name);
+				printf("===== %s %s Symbol Table =====\n", auxtable->type, auxtable->name);
 			
-			nodetable = table->nodetable;
+			nodetable = auxtable->nodetable;
 
 			while ( nodetable != NULL){
 				printf("%s\t%s%s\n", nodetable->id, nodetable->type, nodetable->parameter);
@@ -109,20 +112,20 @@ void print_tables(){
 			}
 			printf("\n");
 		}
-		table = table->next;
+		auxtable = auxtable->next;
 	}
 
 }
 
 char * search_type(char * id, char * typetable){
-	struct Table * table = symboltable;
-	struct NodeTable* nodetable = (struct NodeTable*) malloc(sizeof(struct NodeTable));
+	Table * auxtable = symboltable;
+	NodeTable* nodetable = (NodeTable*) malloc(sizeof(NodeTable));
 	
 
-	while(table != NULL){
-		if (strcmp(table->name, typetable) == 0){
+	while(auxtable != NULL){
+		if (strcmp(auxtable->name, typetable) == 0){
 			
-			nodetable = table->nodetable;
+			nodetable = auxtable->nodetable;
 			while (nodetable != NULL){
 				if (strcmp(nodetable->id, id) == 0)
 					return (char *) strdup(nodetable->type);
@@ -130,11 +133,11 @@ char * search_type(char * id, char * typetable){
 				nodetable = nodetable->next;
 			}
 		}
-		table = table->next;
+		auxtable = auxtable->next;
 	}
 
-	table = symboltable;
-	nodetable = table->nodetable;
+	auxtable = symboltable;
+	nodetable = auxtable->nodetable;
 
 	while (nodetable != NULL){
 		if (strcmp(nodetable->id, id) == 0){

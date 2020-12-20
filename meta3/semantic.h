@@ -1,16 +1,24 @@
+#ifndef SEMANTIC_H
+#define SEMANTIC_H
+
+#include <stdio.h>
+#include <stdlib.h>  
+#include <string.h> 
 #include "symbol_table.h"
-#include "y.tab.h"
 #include "semantic.c"
+
 //semantic  
 
-void check_program(Node * node);
-void check_func_definition(Node * node);
-void check_func_declaration(Node * node);
-void check_declaration(Node * node);
+void check_program(struct Node * node);
+void check_func_definition(struct  Node * node);
+void check_func_declaration(struct  Node * node);
+void check_declaration(struct  Node * node);
 char * check_type_specs(char * typespec);
-char * check_parameter(Node * node);
-char ** check_parameters(Node * node);
-void insert_parameters_function(Node * node, char * typetable);
-void check_tree(Node * node);
-void check_FuncBody(Node * node, char * typetable);
+char * check_parameter(struct  Node * node);
+char ** check_parameters(struct  Node * node);
+void insert_parameters_function(struct Node * node, char * typetable);
+void check_tree(struct  Node * node);
+void check_func_body(struct  Node * node, char * typetable);
+void check_extra(char* str);
 
+#endif

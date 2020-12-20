@@ -1,9 +1,10 @@
+#ifndef UCCOMPILER_H
+#define UCCOMPILER_H
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 char chars[1000];
-typedef struct Node Node;
 struct Node * node;
 
 
@@ -11,22 +12,24 @@ struct Node * node;
 
 char * id;
 char * type;
-Node* insert_node(char * id, char * type, Node * son);
-void insert_brother(Node *node, Node *brother);
-void print_tree(Node *root, int dots);
-void addSonFirst(Node* father, Node* son);
-void clear(Node *root);
+struct Node* insert_node(char * id, char * type, struct Node * son);
+void insert_brother(struct Node *node,struct Node *brother);
+void print_tree(struct Node *root, int dots);
+void addSonFirst(struct Node* father, struct Node* son);
+void clear(struct Node *root);
 int yylex(void);
 void yyerror (char * s);
 
 
 //structs
 
-struct Node{
-        Node *son;
-        Node *brother;
+typedef struct Node{
+        struct Node *son;
+        struct Node *brother;
         char *id;
         char *type;
         char *extra;
-    };
+    }Node;
 
+
+#endif

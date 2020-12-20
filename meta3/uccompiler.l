@@ -2,11 +2,11 @@
 
 	#include "uccompiler.h"
 	#include "y.tab.h"
-	#include "symbol_table.h"
+	#include "symbol_table.c"
 	#include "semantic.h"
 
 
-	Node * root;
+	Node * node;
 	int column = 1;
     int line = 1;
     int flag = 0;
@@ -240,8 +240,8 @@ int main(int argc, char *argv[])
 			flag = 2;
 			//error_lex=1; // print dos erros lexicais
 			//error_syn=1;
-			check_program(root);
-			check_tree(root);
+			check_program(node);
+			check_tree(node);
 			print_tables();
 			yyparse();
 			

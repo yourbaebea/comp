@@ -4,33 +4,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "y.tab.h"
-#include "symbol_table.c"
 
-typedef struct NodeTable NodeTable;
-struct NodeTable * nodetable;
-
-struct NodeTable
+typedef struct nodetable
 {
 	char * id;
 	char * type;
 	char * parameter;	
-	struct NodeTable * next;
-};
+	struct nodetable * next;
+}NodeTable;
 
-//typedef struct Table Table;
-struct Table * table;
-
-struct Table
+typedef struct table
 {
 	char * name;
 	char * type;
 	int flag;
 	char ** parameters;
 
-	NodeTable * nodetable;
-	struct Table * next;
-} ;
+	struct nodetable * nodetable;
+	struct table * next;
+}Table ;
 
 void start_table();
 void init_function_table(char * name, char ** parameters, int flag);

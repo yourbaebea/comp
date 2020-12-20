@@ -11,7 +11,7 @@
 
     int syn_error = 0;
     extern int flag;
-    extern Node * root;
+    extern Node * node;
 
 
 
@@ -183,7 +183,7 @@
 %%
 
 
-Program: FunctionsAndDeclarations                   {root = insert_node(NULL,"Program",$1);if (flag==2 && syn_error==0){print_tree($$,0);}}
+Program: FunctionsAndDeclarations                   {$$ = insert_node(NULL,"Program",$1);if (flag==2 && syn_error==0){print_tree($$,0);}}
     ;
 
 FunctionsAndDeclarations:

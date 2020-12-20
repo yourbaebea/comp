@@ -6,6 +6,16 @@
 char name[20];
 char chartype[20];
 
+void check_extra(char* str){
+    int i = 0;
+    while (i<strlen(str) - 1 && str[i] != '(')
+        i++;
+    if (str[i] == '('){
+        str[i]='\0';
+    }
+    
+}
+
 void check_program(struct Node* node){ 
 	if (node == NULL)
 		return;
@@ -38,40 +48,59 @@ void check_program(struct Node* node){
 }
 
 void check_func_definition(struct Node* node){
+	Node * son = node->son;
 	char * type = check_type_specs(node->son->type);
 	char * id = strdup(node->son->brother->son->id);
-	char * parameter = check_parameter(node->son->brother->son->brother);
-	char ** parameters = check_parameters(node->son->brother->son->brother);
+	
+	while(son != NULL &&  strcmp(son->type,"ParamList") != 0){
+            son = son->brother;
+    }
+    if(son == NULL) return;
 
+	//save the current id on the global char name
 	strcpy(name, id);
+
+    char * parameter = check_parameter(son);
+	char ** parameters = check_parameters(son);
 
 	insert(id, type, parameter, "Global");
 	init_function_table(id, parameters, 1);
 	insert("return", type, "", id);
-	insert_parameters_function(node->son->brother->son->brother, id);
+	insert_parameters_function(son, id);
 }
 
 void check_func_declaration(struct Node* node){
-	char * type = check_type_specs(node->son->type);
-	char * id = strdup(node->son->brother->son->id);
-	char * parameter = check_parameter(node->son->brother->son->brother);
-	char ** parameters = check_parameters(node->son->brother->son->brother);
+
+	Node * son = node->son;
+	Node * brother = node->son->brother;
+
+	char * type = check_type_specs(son->type);
+	char * id = strdup(brother->id);
+	
+	while(strcmp(son->type,"ParamList") != 0){
+            son = son->brother;
+    }
+    if(son == NULL) return;
+
+	
+    char * parameter = check_parameter(son);
+	char ** parameters = check_parameters(son);
 
 	insert(id, type, parameter, "Global");
-	init_function_table(id, parameters, 0);
+	init_function_table(id, parameters, 1);
+	
 }
 
-void check_declaration(Node* node){
+void check_declaration(struct Node* node){
 	
-	if (node->id == NULL){
-		char * type = check_type_specs(node->son->type);
-		char * id = strdup(node->son->brother->id);	
-	}
-	
-	else {
+	if (node->id != NULL){
 		char * id = strdup(node->son->id);
 	}
-
+	else {
+		char * type = check_type_specs(node->son->type);
+		char * id = strdup(node->son->brother->id);
+			
+	}
 	strcpy(chartype,type);
 	insert(id, type, "", name);
 }
@@ -80,10 +109,10 @@ void check_declaration(Node* node){
 char * check_type_specs(char * typespec){
 	char * type;
 
-	char * typelist = ["Char","Int","Void","Double"];
+	char typelist[][100]  = {"Char","Int","Void","Double"};
 
 
-	for (int i=0; i< len(typelist); i++){
+	for (int i=0; i< 4; i++){
 
 		if (strcmp(typespec, typelist[i]) == 0){
 
@@ -91,12 +120,13 @@ char * check_type_specs(char * typespec){
 			for(int i = 0; str[i]; i++){
 			  str[i] = tolower(str[i]);
 			}
-			type= str;
+			type = str;
 		}
+	}
 
 			
 
-	return type;
+	return strdup(type);
 }
 
 
@@ -180,9 +210,11 @@ void check_func_body(struct Node* node, char * typetable){
 	if (node == NULL)
 		return;
 
-	if (node->type != NULL){
-		char * typelist = ["Declaration","Id", "Or", "And","BitWiseAnd","BitWiseOr","BitWiseXor","Mod","Not","Eq",
-			"Ne","Le","Ge","Lt","Gt","IntLit","ChrLit","RealLit"];
+	char* typespec= node->type ;
+
+	if (typespec != NULL){
+		char typelist  [][100]= {"Declaration","Id", "Or", "And","BitWiseAnd","BitWiseOr","BitWiseXor","Mod","Not","Eq",
+			"Ne","Le","Ge","Lt","Gt","IntLit","ChrLit","RealLit"};
 
 		
 		for (int i=0; i< len(typelist); i++){
@@ -194,16 +226,18 @@ void check_func_body(struct Node* node, char * typetable){
 						break;
 					case 1:// id
 						char * type = search_type(node->id, typetable);
+						char * extra;
+						strcat(extra," - ");
+
 						if (strcmp(type, "") == 0){
-							node->extra = strdup(" - undef");
+							strcat(extra,"undef");
 						}
 						else{
-							extra= (char *) malloc(sizeof(char) * (4 + strlen(type)));
-							extra[0] = '\0';
-							strcat(extra," - ");
 							strcat(extra,type);
-							node->extra = strdup(extra);
 						}
+
+						int size = strlen(extra)+1
+						node->extra= strndup(extra, size)
 						break;
 					case 17: // reallit
 						node->extra = strdup(" - double");
@@ -213,49 +247,40 @@ void check_func_body(struct Node* node, char * typetable){
 						node->extra = strdup(" - int");
 				}
 			}
-				
-
 		}
 		
-	}
+	
 
-	Node* aux = node->son;
+		Node* aux = node->son;
 
-	char * typelist = ["Plus","Minus","Store","Comma","Add","Sub","Mul","Div","Call"];
+		char typelist2 [][100]= {"Plus","Minus","Store","Comma","Add","Sub","Mul","Div","Call"};
 
 
-	while(aux != NULL){
-		if (flag == 1 && aux->type != NULL && strcmp(aux->type, "Id") == 0){
-			if (aux->brother != NULL &&aux->brother->type != NULL && strcmp(aux->brother->type, "Id") == 0){
-				aux = aux->brother;
+		while(aux != NULL){
+			if (flag == 1 && aux->type != NULL && strcmp(aux->type, "Id") == 0){
+				if (aux->brother != NULL &&aux->brother->type != NULL && strcmp(aux->brother->type, "Id") == 0){
+					aux = aux->brother;
+					check_func_body(aux, typetable);
+				}
+			}
+			
+			else{
 				check_func_body(aux, typetable);
 			}
-		}
-		
-		else{
-			check_func_body(aux, typetable);
+
+			aux = aux->brother;	
 		}
 
-		aux = aux->brother;	
-	}
+		Node* aux1= node->son;
 
 
-	for (int i=0; i< len(typelist); i++){
-
-			if (strcmp(typespec, typelist[i]) == 0){
+		for (int i=0; i< len(typelist2); i++){
+			if (strcmp(typespec, typelist2[i]) == 0){
 				switch(i){
-					case 0: case 1: case 2: //plus minus store
-						Node* aux1 = node->son;
-						while (strcmp(aux1->type,"Aux") == 0)
-							aux1 = aux1->son;
-
-						extra= strdup(aux1->extra);
-						check_extra(extra);
-						node->extra = strdup(extra);
-						break;
-
-					case 3: //comma
-						Node* aux1 = node->son->brother;
+					case 0: case 1: case 2: case 3: //plus minus store comma
+						if (strcmp(node->type, "Comma") == 0)
+		                  	aux1 = aux1->brother;
+		                  
 						while (strcmp(aux1->type,"Aux") == 0)
 							aux1 = aux1->son;
 
@@ -265,35 +290,28 @@ void check_func_body(struct Node* node, char * typetable){
 						break;
 
 					case 8: //call
-						Node* son = node->son;
-						while (strcmp(son->type, "Aux") == 0)
-							son = son->son;
+						Node* aux2 =  node->son;
+						while (strcmp(aux2->type, "Aux") == 0)
+							aux2 = aux2->son;
 
-						char * type = search_type(son->id, "Global");
+						char * type = search_type(aux2->id, "Global");
+						char * extra;
+						strcat(extra," - ");
+
 						if (strcmp(type, "") == 0){
-							node->extra = (char *)strdup(" - undef");
+							strcat(extra,"undef");
 						}
 						else{
-							extra= (char *) malloc(sizeof(char) * (4 + strlen(type)));
-							extra[0] = '\0';
-							strcat(extra," - ");
 							strcat(extra,type);
-							int i = 0;
-							while (i<strlen(extra) - 1 && extra[i] != '(')
-								i++;
-							if (extra[i] == '('){
-								extra[i]='\0';
-								node->extra = strdup(extra);
-							}
-							else{
-								node->extra = strdup("");
-							}
+							checkextra(extra);
 						}
+						node->extra= extra;
 
 						break;
 
+
 					default: //case 4:	case 5: case 6: case 7:  add sub div mul
-						Node* aux1 = node->son;
+						
 						while (strcmp(aux1->type,"Aux") == 0)
 							aux1 = aux1->son;
 						
@@ -308,40 +326,31 @@ void check_func_body(struct Node* node, char * typetable){
 
 						char* extra3;
 
-						switch(extra1){
-							case " - undef": case  " - double": case " - int": case " - short": case " - char":
-								extra3 = extra1;
-								break;
-							default:
-								switch(extra2){
-									case " - undef": case  " - double": case " - int": case " - short": case " - char":
-										extra3 = extra2;
-										break;
-									default:
-										extra3=NULL;
-									
-								}
+						char extralist [][100]= {" - undef"," - double"," - int"," - short"," - char"};
+
+
+						for (int i=0; i< len(extralist); i++){
+							if (strcmp(extra1, extralist[i]) == 0)
+								extra3= extra1;
+							if (strcmp(extra2, extralist[i]) == 0)
+								extra3= extra2;
 
 						}
 
 						node->extra = extra3;
-
-						
-				}
+						break;
+		
+				}	
 			}
 
 	
+		}
+
 	}
+
+
 }
 
-void check_extra(char* str){
-    int i = 0;
-    while (i<strlen(str) - 1 && str[i] != '(')
-        i++;
-    if (str[i] == '('){
-        str[i]='\0';
-    }
-    
-}
+
 
 
